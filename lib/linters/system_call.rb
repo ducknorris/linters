@@ -1,4 +1,5 @@
 require "open3"
+require "linters/command_result"
 
 module Linters
   class SystemCall
@@ -9,25 +10,11 @@ module Linters
 
     def execute
       output, status = Open3.capture2e(command, chdir: directory)
-
-      if status.success?
-        output
-      else
-        raise NonZeroExitStatusError.new("Command: '#{command}'", output)
-      end
+      CommandResult.new(output: output, status: status)
     end
 
     private
 
     attr_reader :command, :directory
-
-    class NonZeroExitStatusError < StandardError
-      attr_reader :output
-
-      def initialize(message, output)
-        super(message)
-        @output = output
-      end
-    end
   end
 end

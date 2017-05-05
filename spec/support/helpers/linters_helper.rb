@@ -27,6 +27,7 @@ module LintersHelper
       patch: attributes["patch"],
       pull_request_number: attributes["pull_request_number"],
       violations: violations,
+      error: nil,
     )
   end
 end

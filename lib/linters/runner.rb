@@ -25,13 +25,18 @@ module Linters
     end
 
     def call
-      output = Lint.call(
+      result = Lint.call(
         command: linter_options.command(filename),
         config_file: config_file,
         source_file: source_file,
       )
-      violations = linter_options.tokenizer.parse(output)
-      complete_file_review(violations)
+      violations = linter_options.tokenizer.parse(result.output)
+
+      if violations.empty? && result.error?
+        complete_file_review([], result.output)
+      else
+        complete_file_review(violations)
+      end
     end
 
     private
@@ -53,7 +58,7 @@ module Linters
       end
     end
 
-    def complete_file_review(violations)
+    def complete_file_review(violations, error = nil)
       Resque.enqueue(
         CompletedFileReviewJob,
         commit_sha: attributes.fetch("commit_sha"),
@@ -62,6 +67,7 @@ module Linters
         patch: attributes.fetch("patch"),
         pull_request_number: attributes.fetch("pull_request_number"),
         violations: violations,
+        error: error,
       )
     end
 

@@ -26,8 +26,6 @@ module Linters
 
     def run_linter_on_system(directory)
       system_call(directory).execute
-    rescue SystemCall::NonZeroExitStatusError => e
-      e.output
     end
 
     def system_call(directory)

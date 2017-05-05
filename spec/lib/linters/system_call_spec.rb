@@ -9,9 +9,12 @@ describe Linters::SystemCall do
         directory: ".",
       )
 
-      output = system.execute
+      result = system.execute
 
-      expect(output).to eq("Hello World!")
+      expect(result).to have_attributes(
+        output: "Hello World!",
+        error?: false,
+      )
     end
 
     it "captures stderr" do
@@ -20,9 +23,12 @@ describe Linters::SystemCall do
         directory: ".",
       )
 
-      output = system.execute
+      result = system.execute
 
-      expect(output).to eq("Hello World!")
+      expect(result).to have_attributes(
+        output: "Hello World!",
+        error?: false,
+      )
     end
 
     it "captures and concats stdout and stderr" do
@@ -31,36 +37,28 @@ describe Linters::SystemCall do
         directory: ".",
       )
 
-      output = system.execute
+      result = system.execute
 
-      expect(output).to eq("Hello Stdout!Hello Stderr!")
+      expect(result).to have_attributes(
+        output: "Hello Stdout!Hello Stderr!",
+        error?: false,
+      )
     end
   end
 
-  context "running an invalid command" do
-    it "raises an error" do
+  context "when running an invalid command" do
+    it "returns an result with the error output" do
       system = Linters::SystemCall.new(
-        command: "printf",
+        command: "ruby invalid",
         directory: ".",
       )
 
-      expect { system.execute }.
-        to raise_error(
-          Linters::SystemCall::NonZeroExitStatusError,
-          "Command: 'printf'",
-        )
-    end
+      result = system.execute
 
-    it "stores the command's output on the error" do
-      system = Linters::SystemCall.new(
-        command: "printf",
-        directory: ".",
+      expect(result).to have_attributes(
+        output: "ruby: No such file or directory -- invalid (LoadError)\n",
+        error?: true,
       )
-
-      expect { system.execute }.to raise_error do |error|
-        expect(error.output).
-          to match(/(usage: printf format)|(printf: missing operand)/)
-      end
     end
   end
 end
